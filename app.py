@@ -4,6 +4,8 @@ from resources.transaction import blb as transactionblueprint
 from resources.user import blb as Userblueprint
 from extensions import db, app, api, jwt
 from flask_migrate import Migrate
+from datetime import timedelta
+from blocklist import BLOCKLIST
 
 # import model
 
@@ -28,6 +30,9 @@ def create_app(db_url=None):
     migrate = Migrate(app, db)
     api.init_app(app)
     jwt.init_app(app)
+
+    app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(hours=1)
+    app.config["JWT_REFRESH_TOKEN_EXPIRES"] = timedelta(days=30)
 
     # @jwt.token_in_blocklist_loader
     # def check_if_token_in_blocklist(jwt_header, jwt_payload):
@@ -59,6 +64,12 @@ def create_app(db_url=None):
             ),
             401,
         )
+
+    # this is going to check the BLOCKLIST set if the token you're trying to use exist in the set
+    # if the token is present in the set, it will return a 'token revoked' message
+    @jwt.token_in_blocklist_loader
+    def check_if_token_in_blocklist(jwt_header, jwt_payload):
+        return jwt_payload['jti'] in BLOCKLIST
 
     @jwt.expired_token_loader
     def expired_token_callback(jwt_header, jwt_payload):

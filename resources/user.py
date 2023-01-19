@@ -13,6 +13,7 @@ from flask_jwt_extended import (
 )
 from blocklist import BLOCKLIST
 from sqlalchemy import or_
+from datetime import timedelta
 
 blb = Blueprint("user", __name__, description="a user api")
 
@@ -40,6 +41,18 @@ class UserRegister(MethodView):
         db.session.add(user)
         db.session.commit()
         return {"message": "user created successfully"}
+
+
+# this is an endpoint that uses the refresh token to generate a new access token
+@blb.route("/refresh")
+class TokenRefresh(MethodView):
+    @jwt_required(refresh=True)
+    def post(self):
+        current_user = get_jwt_identity()
+        new_token = create_access_token(identity=current_user,
+                                        expires_delta=timedelta(hours=2))
+
+        return {"access_token": new_token}
 
 
 @blb.route("/user/login")
