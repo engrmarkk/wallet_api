@@ -1,7 +1,7 @@
 from flask_smorest import Blueprint, abort
 from flask.views import MethodView
 from passlib.hash import pbkdf2_sha256
-from schema import UserSchema, UserLoginschema, plainUserSchema
+from schema import UserSchema, UserLoginschema, plainUserSchema, transactionByUser
 from model import User
 from extensions import db
 from flask_jwt_extended import (
@@ -91,8 +91,20 @@ class GetAllUsers(MethodView):
     @jwt_required()
     @blb.response(200, UserSchema(many=True))
     def get(self):
-        users = User.query.all()
-        return users
+        if User.query.get(get_jwt_identity()).is_admin:
+            users = User.query.all()
+            return users
+        abort(401, "Unauthorized")
+
+
+@blb.route("/view_account")
+class viewYourAccount(MethodView):
+    @blb.response(200, UserSchema)
+    @jwt_required()
+    def get(self):
+        current_user_id = get_jwt_identity()
+        current_user = User.query.get(current_user_id)
+        return current_user
 
 
 @blb.route("/user/<int:user_id>")
@@ -100,5 +112,41 @@ class GetSpecificUser(MethodView):
     @jwt_required()
     @blb.response(200, UserSchema)
     def get(self, user_id):
-        user = User.query.get_or_404(user_id)
-        return user
+        if User.query.get(get_jwt_identity()).is_admin:
+            user = User.query.get_or_404(user_id)
+            return user
+        abort(401, "Unauthorized")
+
+    @jwt_required()
+    def delete(self, user_id):
+        if User.query.get(get_jwt_identity()).is_admin:
+            user = User.query.get_or_404(user_id)
+            db.session.delete(user)
+            db.session.commit()
+            return {"message": "user deleted"}
+        abort(401, "Unauthorized")
+
+    @jwt_required()
+    def patch(self, user_id):
+        if User.query.get(get_jwt_identity()).is_admin:
+            user = User.query.get_or_404(user_id)
+            if user.id == get_jwt_identity():
+                abort(401, "Unauthorized")
+            if user.is_admin == 1:
+                user.is_admin = 0
+                db.session.commit()
+                return {"message": "user demoted from being an admin"}
+            user.is_admin = 1
+            db.session.commit()
+            return {"message": "user promoted to admin"}
+        abort(401, "Unauthorized")
+
+
+@blb.route("/user/transaction")
+class GetUserTransaction(MethodView):
+    @jwt_required()
+    @blb.response(200, transactionByUser(many=True))
+    def get(self):
+        current_user_id = get_jwt_identity()
+        current_user = User.query.get(current_user_id)
+        return current_user.transacts
