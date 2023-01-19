@@ -1,18 +1,15 @@
 import os
-from flask import Flask, jsonify
-from flask_smorest import Api
-from flask_jwt_extended import JWTManager
+from flask import jsonify
 from resources.transaction import blb as transactionblueprint
 from resources.user import blb as Userblueprint
-from db import db
+from extensions import db, app, api, jwt
+from flask_migrate import Migrate
 
 # import model
-from flask_migrate import Migrate
 
 
 def create_app(db_url=None):
 
-    app = Flask(__name__)
     app.config["PROPAGATE_EXCEPTIONS"] = True
     app.config["API_TITLE"] = "WALLET REST API"
     app.config["API_VERSION"] = "v1"
@@ -29,8 +26,8 @@ def create_app(db_url=None):
     app.config["JWT_SECRET_KEY"] = "442830361741531832645899122519391798179"
     db.init_app(app)
     migrate = Migrate(app, db)
-    api = Api(app)
-    jwt = JWTManager(app)
+    api.init_app(app)
+    jwt.init_app(app)
 
     # @jwt.token_in_blocklist_loader
     # def check_if_token_in_blocklist(jwt_header, jwt_payload):

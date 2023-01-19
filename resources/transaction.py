@@ -3,7 +3,7 @@ from flask.views import MethodView
 
 from schema import TransactionSchema, transaction2schema
 from model import Transaction, User
-from db import db
+from extensions import db
 from flask_jwt_extended import (
     jwt_required,
     create_access_token,
