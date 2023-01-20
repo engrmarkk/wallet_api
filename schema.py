@@ -60,3 +60,9 @@ class UserLoginschema(Schema):
     username = fields.Str()
     # email = fields.Str()
     password = fields.Str(required=True)
+
+
+class TokenReset(Schema):
+    res_token = fields.Int()
+    password = fields.Str()
+    confirm_password = fields.Str()

@@ -13,4 +13,4 @@ class User(db.Model):
     account_number = db.Column(db.Integer, unique=True, nullable=False)
     account_balance = db.Column(db.Integer, default=20000)
     is_admin = db.Column(db.Boolean, default=False)
-    transacts = db.relationship("Transaction", back_populates="users", lazy=True)
+    transacts = db.relationship("Transaction",cascade="all, delete", back_populates="users", lazy=True)

@@ -19,9 +19,7 @@ class SendMoney(MethodView):
     def post(self, info):
         current_user = get_jwt_identity()
         sender = User.query.get(current_user)
-        receiver = User.query.filter_by(
-            account_number=info["account_number"]
-        ).first()
+        receiver = User.query.filter_by(account_number=info["account_number"]).first()
         if not receiver:
             abort(404, message="user with this account number not found")
         if sender.account_balance < info["amount"]:
