@@ -198,7 +198,7 @@ class GetSpecificUser(MethodView):
             user = User.query.get_or_404(user_id)
             # the admin can't change the admin status of his/her own account
             if user.id == get_jwt_identity():
-                abort(401, "Unauthorized")
+                abort(401, message="You cannot demote yourself")
             # if the user is already an admin, demote the user
             if user.is_admin == 1:
                 user.is_admin = 0

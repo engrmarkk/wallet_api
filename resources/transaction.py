@@ -42,7 +42,7 @@ class SendMoney(MethodView):
         transact1 = Transaction(
             transaction_type="CRT",
             transaction_amount=info["amount"],
-            sender=sender.username,
+            transact_user=sender.username,
             user_id=receiver.id,
         )
         # add and commit your changes
@@ -56,7 +56,7 @@ class SendMoney(MethodView):
         transact2 = Transaction(
             transaction_type="DBT",
             transaction_amount=info["amount"],
-            sender=receiver.username,
+            transact_user=receiver.username,
             user_id=sender.id,
         )
         # add and commit your changes to the database

@@ -10,6 +10,6 @@ class Transaction(db.Model):
         db.DateTime, nullable=False, default=datetime.datetime.utcnow()
     )
     transaction_amount = db.Column(db.Integer, nullable=False)
-    sender = db.Column(db.String(100), nullable=False)
+    transact_user = db.Column(db.String(100), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
     users = db.relationship("User", back_populates="transacts")
